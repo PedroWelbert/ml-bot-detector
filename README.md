@@ -87,3 +87,10 @@ A operacionalização do modelo foi projetada para transformar o artefato estát
     * IP de origem atacante (com exclusão automatizada de IPs internos da própria infraestrutura).
     * Confiança da Predição (**Probability Score**).
 * **Logs de Auditoria:** Cada predição e ação é registrada no **Logs Explorer**, permitindo auditoria posterior sobre a performance do modelo em produção e identificação de possíveis desvios (*Data Drift*).
+
+IMAGENS DA PIPELINE
+<img width="1919" height="358" alt="cloud_storage" src="https://github.com/user-attachments/assets/a374326c-9928-4893-9fad-594219a87c8a" />
+<img width="1909" height="907" alt="cloud_functions" src="https://github.com/user-attachments/assets/96e797a1-b2bd-4600-a772-269cc944d421" />
+<img width="1618" height="322" alt="cloud_scheduler" src="https://github.com/user-attachments/assets/c4781216-2f84-4cdc-8b3c-a573e2aada72" />
+<img width="1907" height="646" alt="cloud_logging" src="https://github.com/user-attachments/assets/069fa706-2fc4-4a58-8c16-819a09b21aa1" />
+<img width="555" height="206" alt="discord_alert" src="https://github.com/user-attachments/assets/0c18b35b-a8bf-4c2b-b6ec-cdffe4b3f01c" />
