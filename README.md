@@ -35,7 +35,7 @@ Projeto final do Workshop PECEGE/POLI USP (Ciência de Dados e IA). Consiste em 
 
 ---
 
-## 🚀 Desenvolvimento e Pipeline (MLOps)
+## 🚀 Desenvolvimento
 
 Para seguir as melhores práticas de Engenharia de Projetos em IA, o desenvolvimento foi modularizado em 4 etapas (notebooks), separando a exploração de dados, a engenharia de features, o treinamento e a avaliação em ambientes distintos.
 
@@ -62,3 +62,28 @@ O modelo carregado foi submetido aos dados inéditos, atingindo resultados excep
 * **F1-Score e Acurácia:** **0.99 (99%)**.
 * **Matriz de Confusão:** Comprovou a ausência de Falsos Positivos, requisito crítico de negócio estabelecido no ML Canvas (garantindo que usuários/clientes reais não sejam bloqueados).
 * **Feature Importance:** A análise matemática do algoritmo confirmou que a variável de intensidade (`req_por_minuto`) aliada aos status de resposta e caminhos suspeitos foram os principais motores para as decisões corretas do modelo.
+
+## 📋 Pipeline (MLOps)
+
+A operacionalização do modelo foi projetada para transformar o artefato estático em um serviço de monitoramento ativo e escalável, utilizando uma arquitetura **Serverless Event-Driven** no Google Cloud Platform (GCP).
+
+### 1. Gestão de Artefatos e Serventia (Model Serving)
+* **Model Registry (Cloud Storage):** O modelo serializado (`.pkl`) é armazenado em um bucket versionado. A Cloud Function carrega o modelo dinamicamente em memória durante a execução (Cold Start), garantindo que atualizações no modelo não exijam mudanças no código da infraestrutura.
+* **Ambiente de Execução:** Utilização do **Google Cloud Functions (2nd Gen)** sobre o Cloud Run, permitindo isolamento de dependências e escalabilidade automática de acordo com o volume de logs processados.
+
+### 2. Ingestão e Captura de Dados (Data Ingestion)
+* **Telemetria de Logs:** Implementação do **Google Cloud Ops Agent** nas instâncias Bitnami (GCE). Através de uma configuração via `tee` e receptores de log, o fluxo de dados do `access_log` do Apache é transmitido para o Cloud Logging.
+* **Filtro de Busca (Query Optimization):** A coleta de dados é realizada via API de Logging, filtrando especificamente pelo `resource.labels.instance_id`. Isso isola o ruído de rede e foca apenas no tráfego que atinge os servidores de aplicação.
+
+### 3. Orquestração e Processamento (Inference Pipeline)
+* **Agendamento (Cloud Scheduler):** Gatilho configurado via **Cron Job** para execuções periódicas. O pipeline foi otimizado para janelas de tempo que compensam o fuso horário (UTC vs Local) e respeitam os limites de cota da API (Quota Management).
+* **Feature Reconstruction em Tempo Real:** * O script de inferência replica a lógica de pré-processamento desenvolvida na fase de treinamento.
+    * Extração de dados brutos (`textPayload`) via **Expressões Regulares (Regex)** para reconstruir as colunas de `status`, `tamanho_num`, `metodo` e `extensao`.
+    * **One-Hot Encoding Dinâmico:** O sistema mapeia as categorias encontradas nos logs para as 55 features originais do modelo, garantindo integridade matemática na predição sem necessidade de retreinamento.
+
+### 4. Monitoramento e Observabilidade (Alerting)
+* **Feedback Loop (Discord Webhook):** Integração via API para notificações de alta prioridade. O sistema reporta:
+    * Nome da instância e IP externo do servidor atacado (via API de **Compute Engine**).
+    * IP de origem atacante (com exclusão automatizada de IPs internos da própria infraestrutura).
+    * Confiança da Predição (**Probability Score**).
+* **Logs de Auditoria:** Cada predição e ação é registrada no **Logs Explorer**, permitindo auditoria posterior sobre a performance do modelo em produção e identificação de possíveis desvios (*Data Drift*).
